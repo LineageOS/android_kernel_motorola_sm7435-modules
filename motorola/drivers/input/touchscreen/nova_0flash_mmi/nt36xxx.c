@@ -3290,9 +3290,7 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 		goto err_create_nvt_fwu_wq_failed;
 	}
 	INIT_WORK(&ts->nvt_fwu_work, Boot_Update_Firmware);
-#ifndef CONFIG_INPUT_TOUCHSCREEN_MMI
 	queue_work(nvt_fwu_wq, &ts->nvt_fwu_work);
-#endif
 #endif
 #ifdef LCM_FAST_LIGHTUP
 	INIT_WORK(&ts_resume_work, nova_resume_work_func);
