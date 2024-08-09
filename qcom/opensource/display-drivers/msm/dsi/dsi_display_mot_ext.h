@@ -32,7 +32,7 @@
 #include "dsi_display.h"
 #include <linux/alarmtimer.h>
 
-#define LCD_PARA_LINE_LEN 2*1024
+#define LCD_PARA_LINE_LEN 2*896 //512+256+128   1024
 #define LCD_PARA_TEM_BUF_LEN 64
 
 /**

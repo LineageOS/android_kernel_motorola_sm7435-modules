@@ -330,7 +330,7 @@ int dsi_display_set_backlight(struct drm_connector *connector,
 		(panel->bl_config.bl_level && !bl_lvl) ||
 		(nowtimejiffies - lasttimejiffies) > 500 ||
 		lastTrend != curTrend) {
-		pr_info("set_backlight from %u to %u, Trend[cur:last=%d:%d], max[bl:brightness:thermal=%d:%d:%d], for %s\n",
+		pr_info("set_backlight from %u to %u, Trend[cur:last=%d:%d], max[bl:brightness:thermal=%d:%d:%lu], for %s\n",
 		        (u32)(panel->bl_config.bl_level), (u32)bl_lvl, curTrend, lastTrend, panel->bl_config.bl_max_level,
 		        panel->bl_config.brightness_max_level, c_conn->thermal_max_brightness, panel->name);
 		lasttimejiffies = nowtimejiffies;
@@ -1235,8 +1235,8 @@ static int dsi_display_cmd_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	cmd->last_command = (cmd_buf[1] == 1);
 	cmd->msg.channel = cmd_buf[2];
 	cmd->msg.flags = cmd_buf[3];
-	cmd->msg.ctrl = 0;
-	cmd->post_wait_ms = cmd->msg.wait_ms = cmd_buf[4];
+	//cmd->msg.ctrl = 0;
+	cmd->post_wait_ms = cmd_buf[4];
 	cmd->msg.tx_len = ((cmd_buf[5] << 8) | (cmd_buf[6]));
 
 	if (cmd->msg.tx_len > payload_len) {
@@ -1245,8 +1245,8 @@ static int dsi_display_cmd_prepare(const char *cmd_buf, u32 cmd_buf_len,
 		return -EINVAL;
 	}
 
-	if (cmd->last_command)
-		cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
+	//if (cmd->last_command)
+	//	cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 
 	for (i = 0; i < cmd->msg.tx_len; i++)
 		payload[i] = cmd_buf[7 + i];
@@ -1370,7 +1370,7 @@ static int dsi_display_dispUtil_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	cmd->msg.type = tx_data_type;
 	cmd->msg.channel =  0;
 	cmd->last_command = 1;
-	cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
+	//cmd->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 
 	/* DISPUTIL_CMD_TYPE = 1 for DSI write cmd
 	 * DISPUTIL_CMD_TYPE = 0 for DSI read cmd */
@@ -1391,7 +1391,7 @@ static int dsi_display_dispUtil_prepare(const char *cmd_buf, u32 cmd_buf_len,
 	if (cmd_buf[DISPUTIL_CMD_XFER_MODE] == DISPUTIL_DSI_LP_MODE)
 		cmd->msg.flags |= MIPI_DSI_MSG_USE_LPM;
 
-	cmd->msg.ctrl = 0;
+	//cmd->msg.ctrl = 0;
 	cmd->post_wait_ms = 0;
 
 	/*
@@ -1614,8 +1614,8 @@ static int dsi_display_read_elvss_status(struct dsi_display_ctrl *ctrl,
 	cmds.last_command = (data[1] == 1 ? true : false);
 	cmds.msg.channel = data[2];
 	cmds.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmds.msg.ctrl = 0;
-	cmds.post_wait_ms = cmds.msg.wait_ms = data[4];
+	//cmds.msg.ctrl = 0;
+	cmds.post_wait_ms = data[4];
 	cmds.msg.tx_len = ((data[5] << 8) | (data[6]));
 
 	size = cmds.msg.tx_len * sizeof(u8);
@@ -1641,7 +1641,7 @@ static int dsi_display_read_elvss_status(struct dsi_display_ctrl *ctrl,
 		  DSI_CTRL_CMD_CUSTOM_DMA_SCHED);
 
 	if (cmds.last_command) {
-		cmds.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
+		//cmds.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 		flags |= DSI_CTRL_CMD_LAST_COMMAND;
 	}
 	cmds.msg.rx_buf = &elvss_val;
@@ -2378,6 +2378,7 @@ static ssize_t debugfs_read_esd_check_mode(struct file *file,
 		break;
 	case ESD_MODE_TE_CHK_REG_RD:
 		rc = snprintf(buf, len, "te_chk_reg_rd");
+		break;
 	default:
 		rc = snprintf(buf, len, "invalid");
 		break;
@@ -7083,7 +7084,7 @@ int moto_panel_sysfs_add(struct dsi_display *display)
 	ret = sysfs_create_files(&display->drm_conn->kdev->kobj, sde_conn_panel_attrs);
 	dsi_display_ext_init(display);
 
-	DSI_INFO(" sysfs add done, ret\n", ret);
+	DSI_INFO(" sysfs add done, ret = %d\n", ret);
 	display->sysfs_add_done = true;
 
 	return ret;
@@ -9807,7 +9808,7 @@ static int dsi_display_chk_esd_recovery(struct dsi_display *display)
 		}
 
 		if (disp_esd_trigger > 0 && disp_esd_trigger < MAX_ESD_RECOVERY_RETRY) {
-			DSI_WARN("ESD: disp_esd_trigger=%d, trigger ESD again\n");
+			DSI_WARN("ESD: disp_esd_trigger=%d, trigger ESD again\n", disp_esd_trigger);
 			dsi_display_trigger_panel_dead_event(display);
 		} else if (disp_esd_trigger >= MAX_ESD_RECOVERY_RETRY) {
 			DSI_ERR("ESD: disp_esd_trigger=%d is Max, calling BUG\n",
