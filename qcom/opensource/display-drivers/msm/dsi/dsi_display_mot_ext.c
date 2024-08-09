@@ -82,7 +82,7 @@ static enum alarmtimer_restart dsi_display_wakeup_timer_func(struct alarm *alarm
 	if (g_wakeup_timer_interval != 0) {
 		//srand(time(NULL));
 		start = ktime_get_boottime();
-		randomTime = prandom_u32_max(g_wakeup_timer_interval) + g_wakeup_timer_interval;
+		//randomTime = prandom_u32_max(g_wakeup_timer_interval) + g_wakeup_timer_interval;
 		add = ktime_set(randomTime, 0);
 		alarm_start(g_wakeup_timer, ktime_add(start, add));
 		pr_info("%s: randomTimer %d seconds set\n", __func__, randomTime);
@@ -348,7 +348,7 @@ static bool dsi_panel_mot_parse_commands(char* str, u32* length, struct dsi_disp
 
 	mode_timing = &display_mode->timing;
 	priv_info = display_mode->priv_info;
-	pr_info("panel h_active:%d HFP:%d HBP:%d HPW:%d h_skew:%d,   v_active:%d VFP:%d VBP:%d VPW:%d,   panel clk rate:%d mdp_transfer_time_us:%d refresh_rate:%d\n",
+	pr_info("panel h_active:%d HFP:%d HBP:%d HPW:%d h_skew:%d,   v_active:%d VFP:%d VBP:%d VPW:%d,   panel clk rate:%llu mdp_transfer_time_us:%d refresh_rate:%d\n",
 	            mode_timing->h_active, mode_timing->h_front_porch, mode_timing->h_back_porch, mode_timing->h_sync_width, mode_timing->h_skew,
 	            mode_timing->v_active, mode_timing->v_front_porch, mode_timing->v_back_porch, mode_timing->v_sync_width,
 	            priv_info->clk_rate_hz , priv_info->mdp_transfer_time_us, mode_timing->refresh_rate);
@@ -368,7 +368,7 @@ static bool dsi_panel_mot_parse_commands(char* str, u32* length, struct dsi_disp
 				*length = posEnd - pcur + 1;
 			}
 			if (posEnd) {
-				pr_info("posStart address(%llx), val: posStart[0][1][2]=[%2x][%2x][%2x],   posEnd address(%llx), val: posEnd[0][1][2]=[%2x][%2x][%2x]\n",
+				pr_info("posStart address(%s), val: posStart[0][1][2]=[%2x][%2x][%2x],   posEnd address(%s), val: posEnd[0][1][2]=[%2x][%2x][%2x]\n",
 					posStart, posStart[0], posStart[1], posStart[2], posEnd, posEnd[0], posEnd[1], posEnd[2]);
 				len = posEnd - posStart - 1;
 				//*length = len - 1;
@@ -386,7 +386,7 @@ static bool dsi_panel_mot_parse_commands(char* str, u32* length, struct dsi_disp
 				data = (u8*)pbuf;
 				posEnd = pbuf + len;
 				memset(numstr, 0, 8);
-				pr_info("bufStart address(%llx), val: bufStart[0][1][2]=[%2x][%2x][%2x],   bufEnd address(%llx), val: bufEnd[0][1][2]=[%2x][%2x][%2x], len=%d\n",
+				pr_info("bufStart address(%s), val: bufStart[0][1][2]=[%2x][%2x][%2x],   bufEnd address(%s), val: bufEnd[0][1][2]=[%2x][%2x][%2x], len=%d\n",
 					pbuf, pbuf[0], pbuf[1], pbuf[2], posEnd, posEnd[0], posEnd[1], posEnd[2], len);
 				pLine = pbuf;
 				pLineEnd = posEnd;
@@ -416,7 +416,7 @@ static bool dsi_panel_mot_parse_commands(char* str, u32* length, struct dsi_disp
 					}
 					//pr_info("#pre pLine address: %llx, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
 					pLine = dsi_panel_line_remove_front_space(pLine);
-					pr_info("=pst pLine address: %llx, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
+					pr_info("=pst pLine address: %s, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
 					//pr_info("token address:     %llx,      token[0][1][2]=[%2x][%2x][%2x]\n", token, token[0], token[1], token[2]);
 					//pr_info("pLineEnd address: %llx, pLineEnd[0][1][2]=[%2x][%2x][%2x]\n", pLineEnd, pLineEnd[0], pLineEnd[1], pLineEnd[2]);
 					pLineEnd += 2;
@@ -428,7 +428,7 @@ static bool dsi_panel_mot_parse_commands(char* str, u32* length, struct dsi_disp
 							}
 						}
 					} else
-						pr_info("nothing line: %llx, pLine str: %s\n", pLine, pLine);
+						pr_info("nothing line: %s, pLine str: %s\n", pLine, pLine);
 
 					pbuf = pLineEnd ;
 					pLine = pLineEnd;
@@ -520,7 +520,7 @@ static bool dsi_panel_mot_parse_param_commands(char* str, u32* length, struct ds
 				*length = posEnd - pcur + 1;
 			}
 			if (posEnd) {
-				pr_info("posStart address(%llx), val: posStart[0][1][2]=[%2x][%2x][%2x],   posEnd address(%llx), val: posEnd[0][1][2]=[%2x][%2x][%2x]\n",
+				pr_info("posStart address(%s), val: posStart[0][1][2]=[%2x][%2x][%2x],   posEnd address(%s), val: posEnd[0][1][2]=[%2x][%2x][%2x]\n",
 					posStart, posStart[0], posStart[1], posStart[2], posEnd, posEnd[0], posEnd[1], posEnd[2]);
 				len = posEnd - posStart - 1;
 				//*length = len - 1;
@@ -538,7 +538,7 @@ static bool dsi_panel_mot_parse_param_commands(char* str, u32* length, struct ds
 				data = (u8*)pbuf;
 				posEnd = pbuf + len;
 				memset(numstr, 0, 8);
-				pr_info("bufStart address(%llx), val: bufStart[0][1][2]=[%2x][%2x][%2x],   bufEnd address(%llx), val: bufEnd[0][1][2]=[%2x][%2x][%2x], len=%d\n",
+				pr_info("bufStart address(%s), val: bufStart[0][1][2]=[%2x][%2x][%2x],   bufEnd address(%s), val: bufEnd[0][1][2]=[%2x][%2x][%2x], len=%d\n",
 					pbuf, pbuf[0], pbuf[1], pbuf[2], posEnd, posEnd[0], posEnd[1], posEnd[2], len);
 				pLine = pbuf;
 				pLineEnd = posEnd;
@@ -568,7 +568,7 @@ static bool dsi_panel_mot_parse_param_commands(char* str, u32* length, struct ds
 					}
 					//pr_info("#pre pLine address: %llx, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
 					pLine = dsi_panel_line_remove_front_space(pLine);
-					pr_info("=pst pLine address: %llx, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
+					pr_info("=pst pLine address: %s, pLine[0]=%x, pLine str: %s\n", pLine, pLine[0], pLine);
 					//pr_info("token address:     %llx,      token[0][1][2]=[%2x][%2x][%2x]\n", token, token[0], token[1], token[2]);
 					//pr_info("pLineEnd address: %llx, pLineEnd[0][1][2]=[%2x][%2x][%2x]\n", pLineEnd, pLineEnd[0], pLineEnd[1], pLineEnd[2]);
 					pLineEnd += 2;
@@ -580,7 +580,7 @@ static bool dsi_panel_mot_parse_param_commands(char* str, u32* length, struct ds
 							}
 						}
 					} else
-						pr_info("nothing line: %llx, pLine str: %s\n", pLine, pLine);
+						pr_info("nothing line: %s, pLine str: %s\n", pLine, pLine);
 
 					pbuf = pLineEnd ;
 					pLine = pLineEnd;
@@ -740,7 +740,7 @@ bool dsi_panel_mot_parse_timing_from_file(struct dsi_display *display, int index
 		dev_warn_once(&display->pdev->dev, "Request firmware failed - /data/vendor/param/firmware/%s (%d)\n", file_path, rc);
 		return ret;
 	}
-	pr_info("found /data/vendor/param/firmware/%s, size=%d, with %d timing modes\n", file_path, fw->size, display->panel->num_display_modes);
+	pr_info("found /data/vendor/param/firmware/%s, size=%zu, with %d timing modes\n", file_path, fw->size, display->panel->num_display_modes);
 
 	if (fw->size < 8 || fw->size > 65536) {
 		dev_warn_once(&display->pdev->dev, "Invalid firmware size (%zu)\n", fw->size);
@@ -773,7 +773,7 @@ bool dsi_panel_mot_parse_timing_from_file(struct dsi_display *display, int index
 			//strncpy(plinebuf, pbuf, llen);
 			memcpy(plinebuf, pbuf, llen);
 			plinebuf[llen] = '\0';
-			pr_info("First line pre:  pbuf address(%llx), len%d, plinebuf[0]=%2x, plinebuf str: %s\n", pbuf, llen, plinebuf[0], plinebuf);
+			pr_info("First line pre:  pbuf address(%s), len%d, plinebuf[0]=%2x, plinebuf str: %s\n", pbuf, llen, plinebuf[0], plinebuf);
 			pline = dsi_panel_line_remove_front_space(plinebuf);
 			if (pline >= plinebuf)
 				llen -= (pline - plinebuf);
@@ -781,7 +781,7 @@ bool dsi_panel_mot_parse_timing_from_file(struct dsi_display *display, int index
 				pr_warn("error line a\n");
 				goto timing_err_exit;
 			}
-			pr_info("First line pst:  pbuf address(%llx), len%d, pline[0]=%2x, pline str: %s\n", pbuf, llen, pline[0], pline);
+			pr_info("First line pst:  pbuf address(%s), len%d, pline[0]=%2x, pline str: %s\n", pbuf, llen, pline[0], pline);
 			pbuf = plineEnd + 1;
 		} else {
 			pr_warn("too large line a\n");
@@ -896,7 +896,7 @@ goContinue:
 				if (llen > 7) {
 					//pr_info("New line pst:  pbuf(%llx),  pbuf[0][1][2][3][4][5][6][7]=[%2x][%2x][%2x][%2x][%2x][%2x][%2x][%2x], len %d, pline[0]=%2x, pline str: %s\n",
 					//	pbuf, pbuf[0], pbuf[1], pbuf[2], pbuf[3], pbuf[4], pbuf[5], pbuf[6], pbuf[7], llen, pline[0], pline);
-					pr_info("New line pst:  pbuf(%llx), len %d, pline[0]=%2x, pline str: %s\n", pbuf, llen, pline[0], pline);
+					pr_info("New line pst:  pbuf(%s), len %d, pline[0]=%2x, pline str: %s\n", pbuf, llen, pline[0], pline);
 				}
 				pbuf = plineEnd + 1;
 			} else {
@@ -907,7 +907,7 @@ goContinue:
 			llen = fwbuf + fw->size - pbuf;
 			memcpy(plinebuf, pbuf, llen);
 			plinebuf[llen] = '\0';
-			pr_info("End line:  pbuf(%llx): len%d:  %s\n", pbuf, llen, plinebuf);
+			pr_info("End line:  pbuf(%s): len%d:  %s\n", pbuf, llen, plinebuf);
 			break;
 		}
 
@@ -945,7 +945,7 @@ static irqreturn_t dsi_display_panel_te_irq_handler_ext(int irq, void *data)
 		 /* Multiplying with 10 to get fps in floating point */
 		fps = ((u64)g_teCount) * 1000000 * 10;
 		do_div(fps, diff_us);
-		DSI_INFO("FPS for last (%dms, %d frames) is %d.%d\n",
+		DSI_INFO("FPS for last (%llums, %llu frames) is %d.%d\n",
 				diff_us/1000, g_teCount, (unsigned int)fps/10, (unsigned int)fps%10);
 		last_time_us = current_time_us;
 		g_teCount = 0;
@@ -1124,7 +1124,7 @@ static void dsi_display_show_para(char* buf, char* pbuf, enum dsi_cmd_set_type t
 	//strcat(pbuf, pLineBuf);
 	for (i=0; i<count; i++) {
 		memset(pLineBuf, 0, LCD_PARA_LINE_LEN);
-		rc = snprintf(pLineBuf, LCD_PARA_TEM_BUF_LEN, "%2x %2x %2x %2x %2x %2x  %2x ",
+		rc = snprintf(pLineBuf, LCD_PARA_TEM_BUF_LEN, "%2x %2x %2x %2x %2x %2zx  %2zx ",
 			priv_info->cmd_sets[type].cmds[i].msg.type, 		//data0
 			priv_info->cmd_sets[type].cmds[i].last_command, 	//data1
 			priv_info->cmd_sets[type].cmds[i].msg.channel,	//data2
@@ -1185,7 +1185,7 @@ static void dsi_display_show_panel_para(char* buf, char* pbuf, enum msm_param_id
 	//strcat(pbuf, pLineBuf);
 	for (i=0; i<count; i++) {
 		memset(pLineBuf, 0, LCD_PARA_LINE_LEN);
-		rc = snprintf(pLineBuf, LCD_PARA_TEM_BUF_LEN, "%2x %2x %2x %2x %2x %2x  %2x ",
+		rc = snprintf(pLineBuf, LCD_PARA_TEM_BUF_LEN, "%2x %2x %2x %2x %2x %2zx  %2zx ",
 			cmd_set->cmds[i].msg.type, 		//data0
 			cmd_set->cmds[i].last_command, 	//data1
 			cmd_set->cmds[i].msg.channel,	//data2
@@ -1280,7 +1280,7 @@ static ssize_t dsi_display_parse_para_get(struct device *dev,
 			mode_timing->v_active, mode_timing->v_front_porch, mode_timing->v_back_porch, mode_timing->v_sync_width);
 		strcat(pbuf, psubbuf);
 		memset(psubbuf, 0, PAGE_SIZE*2);
-		rc = snprintf(psubbuf, PAGE_SIZE*2, "clk rate:%d mdp_transfer_time_us:%d refresh_rate:%d\n",
+		rc = snprintf(psubbuf, PAGE_SIZE*2, "clk rate:%llu mdp_transfer_time_us:%d refresh_rate:%d\n",
 			priv_info->clk_rate_hz , priv_info->mdp_transfer_time_us, mode_timing->refresh_rate);
 		strcat(pbuf, psubbuf);
 		pr_info("%d: %s\n", rc, pbuf);
@@ -1742,8 +1742,9 @@ int mot_nt37701A_display_read_cellid(struct dsi_display_ctrl *ctrl,
 	cmds.last_command = (data[1] == 1 ? true : false);
 	cmds.msg.channel = data[2];
 	cmds.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmds.msg.ctrl = 0;
-	cmds.post_wait_ms = cmds.msg.wait_ms = data[4];
+	//cmds.msg.ctrl = 0;
+	cmds.ctrl = 0;
+	cmds.post_wait_ms = data[4];
 	cmds.msg.tx_len = ((data[5] << 8) | (data[6]));
 
 	size = cmds.msg.tx_len * sizeof(u8);

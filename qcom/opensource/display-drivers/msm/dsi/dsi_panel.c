@@ -5116,7 +5116,7 @@ static int dsi_panel_get_pwr_mode(struct dsi_panel *panel, u8 *val)
 
 	display = container_of(panel->host, struct dsi_display, host);
 	if (!display) {
-		DSI_ERR("failed to retrieve display handle\n", display);
+		DSI_ERR("failed to retrieve display handle\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -5126,7 +5126,7 @@ static int dsi_panel_get_pwr_mode(struct dsi_panel *panel, u8 *val)
 
 	cmd.msg.type = MIPI_DSI_DCS_READ;
 	cmd.last_command = 1;
-	cmd.msg.flags = MIPI_DSI_MSG_LASTCOMMAND;
+	//cmd.msg.flags = MIPI_DSI_MSG_LASTCOMMAND;
 	cmd.msg.channel = 0;
 
 	cmd.msg.tx_len = 1;
@@ -6403,9 +6403,9 @@ static int dsi_panel_tx_cmd_set_elvss(struct dsi_panel *panel,
 			cmds->msg.flags |= MIPI_DSI_MSG_USE_LPM;
 			cmd_elv.msg.flags |= MIPI_DSI_MSG_USE_LPM;
 		}
-		if (cmds->last_command) {
-			cmds->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
-		}
+		//if (cmds->last_command) {
+		//	cmds->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
+		//}
 
 		if (i == 3  && (cmd_elv_set == 1)) {
 			len = ops->transfer(panel->host, &cmd_elv.msg);
@@ -6493,7 +6493,7 @@ int dsi_panel_parse_elvss_config(struct dsi_panel *panel, u8 elv_vl)
 	cmd_elv.last_command = (data[1] == 1 ? true : false);
 	cmd_elv.msg.channel = data[2];
 	cmd_elv.msg.flags |= (data[3] == 1 ? MIPI_DSI_MSG_REQ_ACK : 0);
-	cmd_elv.msg.ctrl = 0;
+	//cmd_elv.msg.ctrl = 0;
 	cmd_elv.post_wait_ms = data[4];
 	cmd_elv.msg.tx_len = ((data[5] << 8) | data[6]);
 
@@ -6501,9 +6501,9 @@ int dsi_panel_parse_elvss_config(struct dsi_panel *panel, u8 elv_vl)
 	payload_elvss[1] = elv_vl & 0x7F;
 	cmd_elv.msg.tx_buf = payload_elvss;
 
-	if (cmd_elv.last_command) {
-		cmd_elv.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
-	}
+	//if (cmd_elv.last_command) {
+	//	cmd_elv.msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
+	//}
 	cmd_elv_set = 1;
 	return 0;
 }
@@ -6658,7 +6658,7 @@ int dsi_panel_enable(struct dsi_panel *panel)
 
 	ktime_get_real_ts64(&timestampEnd);
 	dts = timespec64_sub(timestampEnd, timestampStart);
-	DSI_INFO("-: no_panel_on_read_support=%d, panel_power_cnt=%d, took %ld ms\n",
+	DSI_INFO("-: no_panel_on_read_support=%d, panel_power_cnt=%d, took %lld ms\n",
 		panel->no_panel_on_read_support, panel->panel_power_cnt, timespec64_to_ns(&dts)/1000000);
 
 	panel->panel_initialized = true;
