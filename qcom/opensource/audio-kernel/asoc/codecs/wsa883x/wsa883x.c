@@ -1363,11 +1363,9 @@ static int wsa883x_spkr_event(struct snd_soc_dapm_widget *w,
 		wsa883x->playing = true;
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask)) {
+		if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask))
 			wcd_disable_irq(&wsa883x->irq_info,
 					WSA883X_IRQ_INT_PDM_WD);
-			clear_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled);
-		}
 		snd_soc_component_update_bits(component,
 				WSA883X_VBAT_ADC_FLT_CTL,
 				0x01, 0x00);
@@ -1628,11 +1626,9 @@ static void wsa883x_recovery_work(struct work_struct *work)
 
 	mutex_lock(&wsa883x->res_lock);
 	// SND_SOC_DAPM_PRE_PMD: spkr_event
-	if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask)) {
+	if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask))
 		wcd_disable_irq(&wsa883x->irq_info,
 				WSA883X_IRQ_INT_PDM_WD);
-		clear_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled);
-	}
 	snd_soc_component_update_bits(component,
 			WSA883X_VBAT_ADC_FLT_CTL,
 			0x01, 0x00);
@@ -1791,11 +1787,8 @@ static void wsa883x_recovery_work(struct work_struct *work)
 		snd_soc_component_update_bits(wsa883x->component,
 					WSA883X_PA_FSM_CTL,
 					0x01, 0x01);
-		if (!test_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled)) {
-			wcd_enable_irq(&wsa883x->irq_info,
-					WSA883X_IRQ_INT_PDM_WD);
-			set_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled);
-		}
+		wcd_enable_irq(&wsa883x->irq_info,
+				WSA883X_IRQ_INT_PDM_WD);
 		/* Added delay as per HW sequence */
 		usleep_range(3000, 3100);
 		if (wsa883x->comp_enable) {
@@ -2013,11 +2006,8 @@ static int wsa883x_event_notify(struct notifier_block *nb,
 			snd_soc_component_update_bits(wsa883x->component,
 						WSA883X_PA_FSM_CTL,
 						0x01, 0x01);
-			if (!test_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled)) {
-				wcd_enable_irq(&wsa883x->irq_info,
-						WSA883X_IRQ_INT_PDM_WD);
-				set_bit(WSA883X_IRQ_INT_PDM_WD, &wsa883x->irq_enabled);
-			}
+			wcd_enable_irq(&wsa883x->irq_info,
+					WSA883X_IRQ_INT_PDM_WD);
 			/* Added delay as per HW sequence */
 			usleep_range(3000, 3100);
 			if (wsa883x->comp_enable) {
