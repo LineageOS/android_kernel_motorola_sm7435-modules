@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2021, The Linux Foundation. All rights reserved.
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -167,6 +168,11 @@ enum {
 };
 
 static int detect_result = WSA883x_CODEC2_UNKNOWN;
+
+enum {
+	COMP_PORT_EN_STATUS_BIT = 0,
+	VISENSE_EN_STATUS_BIT,
+};
 
 static const struct regmap_irq wsa883x_irqs[WSA883X_NUM_IRQS] = {
 	REGMAP_IRQ_REG(WSA883X_IRQ_INT_SAF2WAR, 0, 0x01),
@@ -1239,6 +1245,7 @@ static int wsa883x_enable_swr_dac_port(struct snd_soc_dapm_widget *w,
 					&ch_mask[num_port], &ch_rate[num_port],
 					&port_type[num_port]);
 			++num_port;
+			set_bit(COMP_PORT_EN_STATUS_BIT, &wsa883x->port_status_mask);
 		}
 		if (wsa883x->visense_enable) {
 			wsa883x_set_port(component, SWR_VISENSE_PORT,
@@ -1246,6 +1253,7 @@ static int wsa883x_enable_swr_dac_port(struct snd_soc_dapm_widget *w,
 					&ch_mask[num_port], &ch_rate[num_port],
 					&port_type[num_port]);
 			++num_port;
+			set_bit(VISENSE_EN_STATUS_BIT, &wsa883x->port_status_mask);
 		}
 		swr_connect_port(wsa883x->swr_slave, &port_id[0], num_port,
 				&ch_mask[0], &ch_rate[0], &num_ch[0],
@@ -1261,19 +1269,23 @@ static int wsa883x_enable_swr_dac_port(struct snd_soc_dapm_widget *w,
 				&port_type[num_port]);
 		++num_port;
 
-		if (wsa883x->comp_enable) {
+		if (wsa883x->comp_enable &&
+			test_bit(COMP_PORT_EN_STATUS_BIT, &wsa883x->port_status_mask)) {
 			wsa883x_set_port(component, SWR_COMP_PORT,
 					&port_id[num_port], &num_ch[num_port],
 					&ch_mask[num_port], &ch_rate[num_port],
 					&port_type[num_port]);
 			++num_port;
+			clear_bit(COMP_PORT_EN_STATUS_BIT, &wsa883x->port_status_mask);
 		}
-		if (wsa883x->visense_enable) {
+		if (wsa883x->visense_enable &&
+			test_bit(VISENSE_EN_STATUS_BIT, &wsa883x->port_status_mask)) {
 			wsa883x_set_port(component, SWR_VISENSE_PORT,
 					&port_id[num_port], &num_ch[num_port],
 					&ch_mask[num_port], &ch_rate[num_port],
 					&port_type[num_port]);
 			++num_port;
+			clear_bit(VISENSE_EN_STATUS_BIT, &wsa883x->port_status_mask);
 		}
 		swr_disconnect_port(wsa883x->swr_slave, &port_id[0], num_port,
 				&ch_mask[0], &port_type[0]);
@@ -1338,7 +1350,8 @@ static int wsa883x_spkr_event(struct snd_soc_dapm_widget *w,
 		/* Force remove group */
 		swr_remove_from_group(wsa883x->swr_slave,
 				      wsa883x->swr_slave->dev_num);
-		if (wsa883x->comp_enable)
+		if (wsa883x->comp_enable &&
+			test_bit(COMP_PORT_EN_STATUS_BIT, &wsa883x->port_status_mask))
 			snd_soc_component_update_bits(component,
 						WSA883X_DRE_CTL_0,
 						0x07,
@@ -1363,9 +1376,11 @@ static int wsa883x_spkr_event(struct snd_soc_dapm_widget *w,
 		wsa883x->playing = true;
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
-		if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask))
+		if (!test_bit(SPKR_ADIE_LB, &wsa883x->status_mask) && wsa883x->pdm_wd_enabled) {
 			wcd_disable_irq(&wsa883x->irq_info,
 					WSA883X_IRQ_INT_PDM_WD);
+			wsa883x->pdm_wd_enabled = false;
+		}
 		snd_soc_component_update_bits(component,
 				WSA883X_VBAT_ADC_FLT_CTL,
 				0x01, 0x00);
@@ -1983,15 +1998,10 @@ static int wsa883x_event_notify(struct notifier_block *nb,
 
 	dev_dbg(wsa883x->dev, "%s: event %d, wsa883x->comp_enable %d\n", __func__, event, wsa883x->comp_enable);
 	switch (event) {
-	case BOLERO_SLV_EVT_PA_OFF_PRE_SSR:
-		if (test_bit(SPKR_STATUS, &wsa883x->status_mask))
-			snd_soc_component_update_bits(wsa883x->component,
-						WSA883X_PA_FSM_CTL,
-						0x01, 0x00);
-		wsa883x_swr_down(wsa883x);
-		break;
-
 	case BOLERO_SLV_EVT_SSR_UP:
+		wsa883x_swr_down(wsa883x);
+		usleep_range(500, 510);
+
 		wsa883x_swr_up(wsa883x);
 		/* Add delay to allow enumerate */
 		usleep_range(20000, 20010);
@@ -2006,11 +2016,15 @@ static int wsa883x_event_notify(struct notifier_block *nb,
 			snd_soc_component_update_bits(wsa883x->component,
 						WSA883X_PA_FSM_CTL,
 						0x01, 0x01);
-			wcd_enable_irq(&wsa883x->irq_info,
-					WSA883X_IRQ_INT_PDM_WD);
+			if (!wsa883x->pdm_wd_enabled) {
+				wcd_enable_irq(&wsa883x->irq_info,
+						WSA883X_IRQ_INT_PDM_WD);
+				wsa883x->pdm_wd_enabled = true;
+			}
 			/* Added delay as per HW sequence */
 			usleep_range(3000, 3100);
-			if (wsa883x->comp_enable) {
+			if (wsa883x->comp_enable &&
+				test_bit(COMP_PORT_EN_STATUS_BIT, &wsa883x->port_status_mask)) {
 				snd_soc_component_update_bits(wsa883x->component,
 						WSA883X_DRE_CTL_1,
 						0x01, 0x00);
@@ -2227,6 +2241,7 @@ static int wsa883x_swr_probe(struct swr_device *pdev)
 			"WSA PDM WD", wsa883x_pdm_wd_handle_irq, wsa883x);
 
 	wcd_disable_irq(&wsa883x->irq_info, WSA883X_IRQ_INT_PDM_WD);
+	wsa883x->pdm_wd_enabled = false;
 
 	wcd_request_irq(&wsa883x->irq_info, WSA883X_IRQ_INT_CLK_WD,
 			"WSA CLK WD", wsa883x_clk_wd_handle_irq, wsa883x);
