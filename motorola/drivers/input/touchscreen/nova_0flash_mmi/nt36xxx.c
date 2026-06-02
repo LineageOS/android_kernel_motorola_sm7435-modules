@@ -1268,10 +1268,16 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 #else
 			event.evcode = 1;
 #endif
+
 			/* call class method */
 			ret = ts->imports->report_gesture(&event);
-			if (!ret)
+			if (!ret) {
+#ifndef CONFIG_BOARD_USES_DOUBLE_TAP_CTRL
 				PM_WAKEUP_EVENT(gesture_wakelock, 5000);
+#else
+				NVT_LOG("Gesture reported");
+#endif
+			}
 		}
 #elif defined(NVT_SENSOR_EN)
 		if (!(ts->wakeable && ts->should_enable_gesture)) {
