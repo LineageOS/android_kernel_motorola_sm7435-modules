@@ -1110,9 +1110,9 @@ static void fps_panel_notifier_callback(enum panel_event_notifier_tag tag,
 		default:
 			break;
 		}
-		DEBUG_PRINT(" %s : screen_onoff = %d \n", __func__, egis_dev->screen_onoff);
 		envp[1] = NULL;
 		ret = kobject_uevent_env(&egis_dev->dd->dev.kobj, KOBJ_CHANGE, envp);
+		DEBUG_PRINT(" %s : screen_onoff = %d ret=%d\n", __func__, egis_dev->screen_onoff, ret);
 	}
 }
 #else
