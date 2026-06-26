@@ -1,3 +1,5 @@
+KBUILD_OPTIONS += CONFIG_INPUT_MISC_FPC1020_SAVE_TO_CLASS_DEVICE=y
+
 all: modules
 
 modules:
