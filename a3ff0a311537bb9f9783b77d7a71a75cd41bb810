@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a032bd49_86d93af6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 19979
+      },
+      "writtenOn": "2026-07-25T19:26:29Z",
+      "side": 1,
+      "message": "Needed for 24.0 but is fine on 23.2",
+      "revId": "a3ff0a311537bb9f9783b77d7a71a75cd41bb810",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
