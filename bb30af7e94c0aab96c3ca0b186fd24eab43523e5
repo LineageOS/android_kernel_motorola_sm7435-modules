@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9b476261_af5444a9",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 4550
+      },
+      "writtenOn": "2026-08-08T15:25:26Z",
+      "side": 1,
+      "message": "Is this motorola specific code? Maybe the fix should go into qcom common repo",
+      "revId": "bb30af7e94c0aab96c3ca0b186fd24eab43523e5",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    }
+  ]
+}
